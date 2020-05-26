@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from xmlFunc import *
 
 
 class MovieApp:
@@ -69,8 +70,8 @@ class MovieApp:
         s = self.periodComboBox.get()
 
         if s == '일간':
-            pass
+            DailyRanking(self.periodEntry.get())
         elif s == '주간':
-            pass
+            WeaklyRanking(self.periodEntry.get())
 
 MovieApp()
