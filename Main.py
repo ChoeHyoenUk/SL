@@ -1,6 +1,7 @@
 from xml.etree import ElementTree
 from tkinter import *
 from tkinter import ttk
+import tkinter.font
 from xmlFunc import *
 import urllib
 import urllib.request
@@ -12,7 +13,8 @@ class MovieApp:
     def __init__(self):
         window = Tk()
         window.title("MovieApp")
-        window.geometry("1200x800")
+        window.geometry("1400x750")
+        myFont = tkinter.font.Font(window, family='맑은 고딕', size=14)
 
         # 각 버튼에 표시될 이미지를 로드
         self.rankingImg = PhotoImage(file='Images/ranking.png')
@@ -26,6 +28,12 @@ class MovieApp:
         self.searchButton.place(x=55, y=0)
         self.theaterButton = Button(window, relief='groove', image=self.theaterImg, command=self.TheaterRaise)
         self.theaterButton.place(x=110, y=0)
+
+        # 세부 정보가 출력될 위젯들
+        self.canvas = Canvas(window, relief='solid', width=500, height=300)
+        self.canvas.place(x=900, y=100)
+        self.infoText = Text(window, relief='solid', width=50, height=13, font=myFont)
+        self.infoText.place(x=900, y=410)
 
         # 박스오피스 랭킹 페이지
         self.rankingPage = Frame(window, width=900, height=650, bg='white')
@@ -43,7 +51,8 @@ class MovieApp:
         self.rankingSearchButton.place(x=500, y=0)
         self.posterButton = []
         for i in range(3):
-            self.posterButton.append(Button(self.rankingPage, compound='top', width=210, height=330))
+            self.posterButton.append(Button(self.rankingPage, compound='top', width=210, height=330,
+                                            command=lambda idx=i: self.ShowMovieInfo(idx)))
         self.nextPage = Button(self.rankingPage, text='▶', command=self.ShowNextPage)
         self.prevPage = Button(self.rankingPage, text='◀', command=self.ShowPrevPage)
         self.rankingPage.place(x=0, y=100)
@@ -82,6 +91,7 @@ class MovieApp:
     def RankingSearch(self):
         s = self.periodComboBox.get()
         self.posterImage.clear()
+        self.detailInfo.clear()
         self.pageNum = 0
 
         if s == '일간':
@@ -120,6 +130,8 @@ class MovieApp:
 
         self.nextPage.place(x=850, y=320)
         self.prevPage.place(x=20, y=320)
+        self.nextPage['state'] = 'active'
+        self.prevPage['state'] = 'disable'
 
     def ShowNextPage(self):
         self.pageNum += 1
@@ -145,6 +157,12 @@ class MovieApp:
                                            image=self.posterImage[i + (3 * self.pageNum)][1])
         if self.pageNum == 0:
             self.prevPage['state'] = 'disable'
+
+    def ShowMovieInfo(self, idx):
+        self.canvas.delete('all')
+        self.canvas.create_image(250, 150, image=self.posterImage[idx + (3 * self.pageNum)][1])
+        self.infoText.delete(1.0, END)
+        self.infoText.insert(END, self.detailInfo[idx+(3*self.pageNum)])
 
 
 MovieApp()
