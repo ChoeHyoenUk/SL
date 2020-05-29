@@ -72,7 +72,13 @@ class MovieApp:
 
         # 영화관 검색 페이지
         self.theaterPage = Frame(window, width=900, height=650, bg='white')
+        self.nameEntry = Entry(self.theaterPage, width=55, relief='solid', bd=2)
+        self.nameEntry.insert(END, "시/군 입력(경기도에 위치한 시/군만 검색 가능합니다.)")
+        self.nameEntry.place(x=0, y=0)
+        self.nameSearchButton = Button(self.theaterPage, text='검색', width=5)
+        self.nameSearchButton.place(x=500, y=0)
         self.theaterPage.place(x=0, y=100)
+
 
         # 처음 시작시 랭킹 페이지가 나오도록 설정함
         self.rankingPage.tkraise()
