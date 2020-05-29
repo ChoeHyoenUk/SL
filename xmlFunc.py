@@ -1,54 +1,40 @@
 from xml.etree import ElementTree
-import http.client
-from xml.dom.minidom import parseString
-import urllib.request
+import requests
 
-key = '23534542e0be066999d2803d1057fc37'
-conn = http.client.HTTPSConnection("www.kobis.or.kr")
+kobisKey = '23534542e0be066999d2803d1057fc37'
+kmdbKey = 'N1UG972286869QC55WOA'
 
 
 def DailyRanking(period):
-    params = '?key=' + key + '&targetDt=' + period
-    conn.request('GET', '/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.xml' + params)
-    res = conn.getresponse()
-    if int(res.status) == 200:
-        strXml = parseString(res.read().decode('utf-8')).toprettyxml()
-
-        tree = ElementTree.fromstring(strXml)
-        items = list(tree.iter("dailyBoxOffice"))
-        for item in items:
-            name = item.find('movieNm')
-            ranking = item.find('rank')
-            sales = item.find('salesAcc')
-            audi = item.find('audiAcc')
-            print("영화 제목: " + name.text)
-            print("박스오피스 순위: " + ranking.text)
-            print("누적 매출: " + sales.text)
-            print("누적 관객: " + audi.text)
-            print()
-    else:
-        print("HTTP Request is failed :" + res.reason)
-        print(res.read().decode('utf-8'))
+    url = 'http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.xml'
+    params = '?key=' + kobisKey + '&targetDt=' + period
+    url += params
+    res = requests.get(url).text
+    tree = ElementTree.fromstring(res)
+    return tree
 
 
 def WeaklyRanking(period):
-    params = '?key=' + key + '&targetDt=' + period + '&weekGb=0'
-    conn.request('GET', '/kobisopenapi/webservice/rest/boxoffice/searchWeeklyBoxOfficeList.xml' + params)
-    res = conn.getresponse()
-    if int(res.status) == 200:
-        strXml = parseString(res.read().decode('utf-8')).toprettyxml()
-        tree = ElementTree.fromstring(strXml)
-        items = list(tree.iter("weeklyBoxOffice"))
-        for item in items:
-            name = item.find('movieNm')
-            ranking = item.find('rank')
-            sales = item.find('salesAcc')
-            audi = item.find('audiAcc')
-            print("영화 제목: " + name.text)
-            print("박스오피스 순위: " + ranking.text)
-            print("누적 매출: " + sales.text)
-            print("누적 관객: " + audi.text)
-            print()
-    else:
-        print("HTTP Request is failed :" + res.reason)
-        print(res.read().decode('utf-8'))
+    url = 'http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchWeeklyBoxOfficeList.xml'
+    params = '?key=' + kobisKey + '&targetDt=' + period
+    url += params
+    res = requests.get(url).text
+    tree = ElementTree.fromstring(res)
+    return tree
+
+
+def GetPosterURL(title, releaseDts):
+    url = 'http://api.koreafilm.or.kr/openapi-data2/wisenut/search_api/search_xml2.jsp?collection=kmdb_new2'
+    url += '&ServiceKey=' + kmdbKey + '&title=' + title + '&releaseDts=' + releaseDts
+    res = requests.get(url).text
+    tree = ElementTree.fromstring(res)
+    items = tree.iter('Row')
+    for item in items:
+        releaseDate = item.find('ratings').find('rating').find('releaseDate').text.replace(' ', '')
+        if releaseDate == releaseDts:
+            posterURL = item.find('posters').text.split('|')[0].replace(' ', '')
+            if posterURL == '':
+                return 'NoImage'
+            else:
+                return posterURL
+    return 'NoImage'
