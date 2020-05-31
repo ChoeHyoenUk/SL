@@ -51,7 +51,7 @@ class MovieApp:
         self.rankingSearchButton.place(x=500, y=0)
         self.posterButton = []
         for i in range(3):
-            self.posterButton.append(Button(self.rankingPage, compound='top', width=210, height=330,
+            self.posterButton.append(Button(self.rankingPage, compound='top', width=210, height=350,
                                             command=lambda idx=i: self.ShowMovieInfo(idx)))
         self.nextPage = Button(self.rankingPage, text='▶', command=self.ShowNextPage)
         self.prevPage = Button(self.rankingPage, text='◀', command=self.ShowPrevPage)
@@ -202,16 +202,17 @@ class MovieApp:
             self.nextPage['state'] = 'disable'
             self.posterButton[0].configure(text=self.rankingPosterImage[9][0],
                                            image=self.rankingPosterImage[9][1])
-            self.posterButton[1].configure(text='BLANK',
-                                           image=PhotoImage(file='Images/NoImage.png'))
-            self.posterButton[2].configure(text='BLANK',
-                                           image=PhotoImage(file='Images/NoImage.png'))
+            self.posterButton[1].place_forget()
+            self.posterButton[2].place_forget()
         else:
             for i in range(3):
                 self.posterButton[i].configure(text=self.rankingPosterImage[i + (3 * self.pageNum)][0],
                                                image=self.rankingPosterImage[i + (3 * self.pageNum)][1])
 
     def ShowPrevPage(self):
+        if self.pageNum == 3:
+            self.posterButton[1].place(x=330, y=150)
+            self.posterButton[2].place(x=580, y=150)
         self.pageNum -= 1
         self.nextPage['state'] = 'active'
         for i in range(3):

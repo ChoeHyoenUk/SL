@@ -181,7 +181,7 @@ def GetDetailInfo(code):
         directorTree = info.iter('director')
         director = '감독: '
         for d in directorTree:
-            director += d.find('peopleNm').text
+            director += d.find('peopleNm').text + ' '
 
         actorTree = list(info.iter('actor'))
         actor = '출연 배우: '
