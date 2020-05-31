@@ -60,8 +60,9 @@ class MovieApp:
         # 배우/감독 검색 페이지
         self.searchPage = Frame(window, width=900, height=650, bg='white')
         self.searchElementComboBox = ttk.Combobox(self.searchPage, width=10)
-        self.searchElementComboBox['value'] = ['영화', '배우/감독']
+        self.searchElementComboBox['value'] = ['영화', '배우', '감독']
         self.searchElementComboBox.current(0)
+        self.selectedElement = None
         self.searchElementComboBox.place(x=0, y=0)
         self.nameEntry = Entry(self.searchPage, width=55, relief='solid', bd=2)
         self.nameEntry.insert(END, "영화제목/배우/감독의 이름 입력")
@@ -76,6 +77,8 @@ class MovieApp:
         self.moviePoster = None
         self.viewFilmoButton = Button(self.searchPage, text='조회', width=5, command=self.ViewFilmo)
         self.viewDetailInfoButton = Button(self.searchPage, text='세부 정보', command=self.ShowDetailInfo)
+        self.movieListbox = Listbox(self.searchPage, width=100, height=35, relief='solid', bd=5)
+        self.movieList = []
         self.searchPage.place(x=0, y=100)
 
         # 영화관 검색 페이지
@@ -94,15 +97,23 @@ class MovieApp:
 
     def RankingRaise(self):
         self.rankingPage.tkraise()
+        self.canvas.delete('all')
+        self.infoText.delete(1.0, END)
 
     def SearchRaise(self):
         self.searchPage.tkraise()
+        self.canvas.delete('all')
+        self.infoText.delete(1.0, END)
 
     def TheaterRaise(self):
         self.theaterPage.tkraise()
+        self.canvas.delete('all')
+        self.infoText.delete(1.0, END)
 
     def RankingSearch(self):
         s = self.periodComboBox.get()
+        self.canvas.delete('all')
+        self.infoText.delete(1.0, END)
         self.rankingPosterImage.clear()
         self.detailInfo.clear()
         self.pageNum = 0
@@ -146,12 +157,38 @@ class MovieApp:
         self.prevPage['state'] = 'disable'
 
     def NameSearch(self):
-        case = self.searchElementComboBox.get()
-        if case == '영화':
-            title = self.nameEntry.get()
+        if self.selectedElement == '영화':
+            self.movieListbox.place_forget()
+            self.viewDetailInfoButton.place_forget()
+        elif self.selectedElement == '감독' or self.selectedElement == '배우':
+            self.filmoListbox.place_forget()
+            self.viewDetailInfoButton.place_forget()
+        self.canvas.delete('all')
+        self.infoText.delete(1.0, END)
+
+        self.selectedElement = self.searchElementComboBox.get()
+        if self.selectedElement == '영화':
+            movieNm = self.nameEntry.get()
+            self.movieList = GetMovies(movieNm)
+            self.movieListbox.delete(0, END)
+            for movie in self.movieList:
+                self.movieListbox.insert(END, movie[0])
+            self.movieListbox.place(x=20, y=50)
+            self.viewDetailInfoButton.place(x=820, y=320)
+
+        elif self.selectedElement == '배우':
+            name = self.nameEntry.get()
+            self.nameSearchResultList = GetActor(name)
+            self.actorAndDirectorListbox.delete(0, END)
+            for people in self.nameSearchResultList:
+                self.actorAndDirectorListbox.insert(END, people[0])
+            self.actorAndDirectorListbox.place(x=20, y=50)
+            self.viewFilmoButton.place(x=390, y=320)
+
         else:
             name = self.nameEntry.get()
-            self.nameSearchResultList = GetActorAndDirector(name)
+            self.selectedName = name
+            self.nameSearchResultList = GetDirector(name)
             self.actorAndDirectorListbox.delete(0, END)
             for people in self.nameSearchResultList:
                 self.actorAndDirectorListbox.insert(END, people[0])
@@ -192,7 +229,7 @@ class MovieApp:
     def ViewFilmo(self):
         code = self.nameSearchResultList[self.actorAndDirectorListbox.curselection()[0]][1]
         self.selectedName = self.nameSearchResultList[self.actorAndDirectorListbox.curselection()[0]][0]
-        self.filmoList = GetFilmo(code)
+        self.filmoList = GetFilmo(code, self.selectedElement)
         self.filmoListbox.delete(0, END)
         for filmo in self.filmoList:
             self.filmoListbox.insert(END, filmo[0])
@@ -200,23 +237,63 @@ class MovieApp:
         self.viewDetailInfoButton.place(x=820, y=320)
 
     def ShowDetailInfo(self):
-        title = self.filmoList[self.filmoListbox.curselection()[0]][0]
-        code = self.filmoList[self.filmoListbox.curselection()[0]][1]
-        url = GetPosterURL_actor(title, self.selectedName)
-        if url != 'NoImage':
-            with urllib.request.urlopen(url) as u:
-                data = u.read()
-            im = Image.open(BytesIO(data))
-            self.moviePoster = ImageTk.PhotoImage(im)
-            self.canvas.delete('all')
-            self.canvas.create_image(250, 150, image=self.moviePoster)
+        if self.selectedElement == '배우':
+            title = self.filmoList[self.filmoListbox.curselection()[0]][0]
+            code = self.filmoList[self.filmoListbox.curselection()[0]][1]
+            url = GetPosterURL_actor(title, self.selectedName)
+            if url != 'NoImage':
+                with urllib.request.urlopen(url) as u:
+                    data = u.read()
+                im = Image.open(BytesIO(data))
+                self.moviePoster = ImageTk.PhotoImage(im)
+                self.canvas.delete('all')
+                self.canvas.create_image(250, 150, image=self.moviePoster)
+            else:
+                self.moviePoster = PhotoImage(file='Images/NoImage.png')
+                self.canvas.delete('all')
+                self.canvas.create_image(250, 150, image=self.moviePoster)
+            DetailInfo = GetDetailInfo(code)
+            self.infoText.delete(1.0, END)
+            self.infoText.insert(END, DetailInfo)
+
+        elif self.selectedElement == '감독':
+            title = self.filmoList[self.filmoListbox.curselection()[0]][0]
+            code = self.filmoList[self.filmoListbox.curselection()[0]][1]
+            url = GetPosterURL_director(title, self.selectedName)
+            if url != 'NoImage':
+                with urllib.request.urlopen(url) as u:
+                    data = u.read()
+                im = Image.open(BytesIO(data))
+                self.moviePoster = ImageTk.PhotoImage(im)
+                self.canvas.delete('all')
+                self.canvas.create_image(250, 150, image=self.moviePoster)
+            else:
+                self.moviePoster = PhotoImage(file='Images/NoImage.png')
+                self.canvas.delete('all')
+                self.canvas.create_image(250, 150, image=self.moviePoster)
+            DetailInfo = GetDetailInfo(code)
+            self.infoText.delete(1.0, END)
+            self.infoText.insert(END, DetailInfo)
+
         else:
-            self.moviePoster = PhotoImage(file='Images/NoImage.png')
-            self.canvas.delete('all')
-            self.canvas.create_image(250, 150, image=self.moviePoster)
-        DetailInfo = GetDetailInfo(code)
-        self.infoText.delete(1.0, END)
-        self.infoText.insert(END, DetailInfo)
+            title = self.movieList[self.movieListbox.curselection()[0]][0]
+            code = self.movieList[self.movieListbox.curselection()[0]][1]
+            openDt = self.movieList[self.movieListbox.curselection()[0]][2]
+            url = GetPosterURL_openDt(title, openDt)
+            if url != 'NoImage':
+                with urllib.request.urlopen(url) as u:
+                    data = u.read()
+                im = Image.open(BytesIO(data))
+                self.moviePoster = ImageTk.PhotoImage(im)
+                self.canvas.delete('all')
+                self.canvas.create_image(250, 150, image=self.moviePoster)
+            else:
+                self.moviePoster = PhotoImage(file='Images/NoImage.png')
+                self.canvas.delete('all')
+                self.canvas.create_image(250, 150, image=self.moviePoster)
+            DetailInfo = GetDetailInfo(code)
+            self.infoText.delete(1.0, END)
+            self.infoText.insert(END, DetailInfo)
 
 
 MovieApp()
