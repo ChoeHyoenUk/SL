@@ -163,8 +163,8 @@ class MovieApp:
                 im = Image.open(BytesIO(data))
                 self.rankingPosterImage.append((name, ImageTk.PhotoImage(im)))
             else:
-                with open('Images/NoImage.png', 'rb') as image:
-                    self.rankingPosterImageForEmail.append(image.read())
+                with open('Images/NoImage.gif', 'rb') as img:
+                    self.rankingPosterImageForEmail.append(img.read())
                 self.rankingPosterImage.append((name, PhotoImage(file='Images/NoImage.png')))
 
         for i in range(3):
@@ -274,8 +274,8 @@ class MovieApp:
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             else:
-                with open('Images/NoImage.png', 'rb') as f:
-                    self.moviePosterForEmail = f.read()
+                with open('Images/NoImage.gif', 'rb') as img:
+                    self.moviePosterForEmail = img.read()
                 self.moviePoster = PhotoImage(file='Images/NoImage.png')
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
@@ -296,8 +296,8 @@ class MovieApp:
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             else:
-                with open('Images/NoImage.png', 'rb') as f:
-                    self.moviePosterForEmail = f.read()
+                with open('Images/NoImage.gif', 'rb') as img:
+                    self.moviePosterForEmail = img.read()
                 self.moviePoster = PhotoImage(file='Images/NoImage.png')
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
@@ -319,8 +319,8 @@ class MovieApp:
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             else:
-                with open('Images/NoImage.png', 'rb') as f:
-                    self.moviePosterForEmail = f.read()
+                with open('Images/NoImage.gif', 'rb') as img:
+                    self.moviePosterForEmail = img.read()
                 self.moviePoster = PhotoImage(file='Images/NoImage.png')
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
