@@ -1,4 +1,3 @@
-from xml.etree import ElementTree
 from tkinter import *
 from tkinter import ttk
 import tkinter.font
@@ -7,6 +6,7 @@ import urllib
 import urllib.request
 from PIL import Image, ImageTk
 from io import BytesIO
+from EmailSendFunc import *
 
 
 class MovieApp:
@@ -39,6 +39,7 @@ class MovieApp:
         self.rankingPage = Frame(window, width=900, height=650, bg='white')
         self.detailInfo = []
         self.rankingPosterImage = []
+        self.rankingPosterImageForEmail = []
         self.pageNum = 0
         self.periodComboBox = ttk.Combobox(self.rankingPage, width=10)
         self.periodComboBox['value'] = ['일간', '주간']
@@ -49,6 +50,7 @@ class MovieApp:
         self.periodEntry.place(x=100, y=0)
         self.rankingSearchButton = Button(self.rankingPage, text='검색', width=5, command=self.RankingSearch)
         self.rankingSearchButton.place(x=500, y=0)
+        self.sendEamil_BoxOffice = Button(self.rankingPage, text='Email', command=self.SendEmail_BoxOfficeInfo)
         self.posterButton = []
         for i in range(3):
             self.posterButton.append(Button(self.rankingPage, compound='top', width=210, height=350,
@@ -75,8 +77,10 @@ class MovieApp:
         self.filmoList = []
         self.selectedName = None
         self.moviePoster = None
+        self.moviePosterForEmail = None
         self.viewFilmoButton = Button(self.searchPage, text='조회', width=5, command=self.ViewFilmo)
         self.viewDetailInfoButton = Button(self.searchPage, text='세부 정보', command=self.ShowDetailInfo)
+        self.sendEamil_MovieInfo = Button(self.searchPage, text='Email', command=self.SendEmail_MovieInfo)
         self.movieListbox = Listbox(self.searchPage, width=100, height=35, relief='solid', bd=5)
         self.movieList = []
         self.searchPage.place(x=0, y=100)
@@ -114,8 +118,10 @@ class MovieApp:
         s = self.periodComboBox.get()
         self.canvas.delete('all')
         self.infoText.delete(1.0, END)
+        self.sendEamil_BoxOffice.place_forget()
         self.rankingPosterImage.clear()
         self.detailInfo.clear()
+        self.rankingPosterImageForEmail.clear()
         self.pageNum = 0
         if s == '일간':
             tree = DailyRanking(self.periodEntry.get())
@@ -142,9 +148,12 @@ class MovieApp:
             if url != 'NoImage':
                 with urllib.request.urlopen(url) as u:
                     data = u.read()
+                self.rankingPosterImageForEmail.append(data)
                 im = Image.open(BytesIO(data))
                 self.rankingPosterImage.append((name, ImageTk.PhotoImage(im)))
             else:
+                with open('Images/NoImage.png', 'rb') as image:
+                    self.rankingPosterImageForEmail.append(image.read())
                 self.rankingPosterImage.append((name, PhotoImage(file='Images/NoImage.png')))
 
         for i in range(3):
@@ -165,6 +174,7 @@ class MovieApp:
             self.viewDetailInfoButton.place_forget()
         self.canvas.delete('all')
         self.infoText.delete(1.0, END)
+        self.sendEamil_MovieInfo.place_forget()
 
         self.selectedElement = self.searchElementComboBox.get()
         if self.selectedElement == '영화':
@@ -226,6 +236,8 @@ class MovieApp:
         self.canvas.create_image(250, 150, image=self.rankingPosterImage[idx + (3 * self.pageNum)][1])
         self.infoText.delete(1.0, END)
         self.infoText.insert(END, self.detailInfo[idx+(3*self.pageNum)])
+        self.imageIndex = idx + (3 * self.pageNum)
+        self.sendEamil_BoxOffice.place(x=550, y=0)
 
     def ViewFilmo(self):
         code = self.nameSearchResultList[self.actorAndDirectorListbox.curselection()[0]][1]
@@ -245,11 +257,14 @@ class MovieApp:
             if url != 'NoImage':
                 with urllib.request.urlopen(url) as u:
                     data = u.read()
+                self.moviePosterForEmail = data
                 im = Image.open(BytesIO(data))
                 self.moviePoster = ImageTk.PhotoImage(im)
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             else:
+                with open('Images/NoImage.png', 'rb') as f:
+                    self.moviePosterForEmail = f.read()
                 self.moviePoster = PhotoImage(file='Images/NoImage.png')
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
@@ -264,11 +279,14 @@ class MovieApp:
             if url != 'NoImage':
                 with urllib.request.urlopen(url) as u:
                     data = u.read()
+                self.moviePosterForEmail = data
                 im = Image.open(BytesIO(data))
                 self.moviePoster = ImageTk.PhotoImage(im)
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             else:
+                with open('Images/NoImage.png', 'rb') as f:
+                    self.moviePosterForEmail = f.read()
                 self.moviePoster = PhotoImage(file='Images/NoImage.png')
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
@@ -284,17 +302,31 @@ class MovieApp:
             if url != 'NoImage':
                 with urllib.request.urlopen(url) as u:
                     data = u.read()
+                self.moviePosterForEmail = data
                 im = Image.open(BytesIO(data))
                 self.moviePoster = ImageTk.PhotoImage(im)
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             else:
+                with open('Images/NoImage.png', 'rb') as f:
+                    self.moviePosterForEmail = f.read()
                 self.moviePoster = PhotoImage(file='Images/NoImage.png')
                 self.canvas.delete('all')
                 self.canvas.create_image(250, 150, image=self.moviePoster)
             DetailInfo = GetDetailInfo(code)
             self.infoText.delete(1.0, END)
             self.infoText.insert(END, DetailInfo)
+        self.sendEamil_MovieInfo.place(x=550, y=0)
+
+    def SendEmail_BoxOfficeInfo(self):
+        image = self.rankingPosterImageForEmail[self.imageIndex]
+        text = self.infoText.get(1.0, END)
+        SendMail(image, text, '박스 오피스 정보입니다.')
+
+    def SendEmail_MovieInfo(self):
+        image = self.moviePosterForEmail
+        text = self.infoText.get(1.0, END)
+        SendMail(image, text, '영화 상세 정보입니다.')
 
 
 MovieApp()

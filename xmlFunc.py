@@ -108,7 +108,7 @@ def GetDirector(name):
 def GetMovies(name):
     movieNm_utf8 = urllib.parse.quote(name)
     url = 'http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.xml'
-    url += '?key=' + kobisKey + '&movieNm=' + movieNm_utf8
+    url += '?key=' + kobisKey + '&movieNm=' + movieNm_utf8 + '&itemPerPage=100'
     res = requests.get(url).text
     tree = ElementTree.fromstring(res)
     items = tree.iter('movie')
@@ -176,7 +176,7 @@ def GetDetailInfo(code):
         genreTree = info.iter('genre')
         genre = '장르: '
         for g in genreTree:
-            genre += g.find('genreNm').text
+            genre += g.find('genreNm').text + ' '
 
         directorTree = info.iter('director')
         director = '감독: '
