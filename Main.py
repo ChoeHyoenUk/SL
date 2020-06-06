@@ -1,7 +1,9 @@
 from tkinter import *
 from tkinter import ttk
 import tkinter.font
+import tkinter.messagebox as msgbox
 from xmlFunc import *
+from openapi_http import *
 import urllib
 import urllib.request
 from PIL import Image, ImageTk
@@ -87,11 +89,20 @@ class MovieApp:
 
         # 영화관 검색 페이지
         self.theaterPage = Frame(window, width=900, height=650, bg='white')
-        self.placeEntry = Entry(self.theaterPage, width=70, relief='solid', bd=2)
-        self.placeEntry.insert(END, "시/군 입력(경기도에 위치한 시/군만 검색 가능합니다.)")
-        self.placeEntry.place(x=0, y=0)
-        self.placeSearchButton = Button(self.theaterPage, text='검색', width=5)
-        self.placeSearchButton.place(x=500, y=0)
+        self.theaterComboBox = ttk.Combobox(self.theaterPage, width=10)
+        self.theaterComboBox['value'] = ['시', '군']
+        self.searchValue = None
+        self.MapView = None
+        self.theaterComboBox.current(0)
+        self.theaterComboBox.place(x=0, y=0)
+        self.theaterEntry = Entry(self.theaterPage, width=70, relief='solid', bd=2)
+        self.theaterEntry.insert(END, "시/군 입력(경기도에 위치한 시/군만 검색 가능합니다.)")
+        self.theaterEntry.place(x=100, y=0)
+        self.theaterSearchButton = Button(self.theaterPage, text='검색', width=5, command=self.TheaterSearch)
+        self.theaterSearchButton.place(x=610, y=0)
+        self.viewMapsButton = Button(self.theaterPage, text='지도 보기', command=self.viewMap)
+        self.theaterListbox = Listbox(self.theaterPage, width=100, height=35, relief='solid', bd=5)
+        self.theaterList = []
         self.theaterPage.place(x=0, y=100)
 
         # 처음 시작시 랭킹 페이지가 나오도록 설정함
@@ -322,11 +333,42 @@ class MovieApp:
         image = self.rankingPosterImageForEmail[self.imageIndex]
         text = self.infoText.get(1.0, END)
         SendMail(image, text, '박스 오피스 정보입니다.')
+        msgbox.showinfo("Email send complete", "박스 오피스 정보를 성공적으로 전송했습니다.")
 
     def SendEmail_MovieInfo(self):
         image = self.moviePosterForEmail
         text = self.infoText.get(1.0, END)
         SendMail(image, text, '영화 상세 정보입니다.')
+        msgbox.showinfo("Email send complete", "영화 세부 정보를 성공적으로 전송했습니다.")
+
+    def TheaterSearch(self):
+        if self.searchValue == '시' or self.searchValue == '군':
+            self.theaterListbox.place_forget()
+            self.viewMapsButton.place_forget()
+        self.canvas.delete('all')
+        self.infoText.delete(1.0, END) #초기화
+
+        self.searchValue = self.theaterComboBox.get()
+
+        if self.searchValue == '시' or self.searchValue == '군':
+            location = self.theaterEntry.get()
+            self.theaterList = GetLocation(location)
+            self.theaterListbox.delete(0,END)
+            for theater in self.theaterList:
+                self.theaterListbox.insert(END,theater[0])
+            self.theaterListbox.place(x=20, y=50)
+            self.viewMapsButton.place(x=820, y=320)
+
+    def viewMap(self):
+        x = self.theaterList[self.theaterListbox.curselection()[0]][1]
+        y = self.theaterList[self.theaterListbox.curselection()[0]][2]
+        print(type(x))
+        print(type(y))
+        urlData = GetMap(x,y)
+        im = Image.open(BytesIO(urlData))
+        self.MapView = PhotoImage(im)
+        self.canvas.delete('all')
+        self.canvas.create_image(250,150,image= self.MapView)
 
 
 MovieApp()

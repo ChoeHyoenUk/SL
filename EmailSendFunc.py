@@ -18,10 +18,8 @@ def SendMail(image, text, title):
     img = MIMEImage(image)
     msg.attach(img)
 
-    print("메일을 보냅니다.")
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
     s.login(me, 'qlalf!1234')
     s.sendmail(me, you, msg.as_string())
     s.close()
-    print("메일을 보냈습니다.")

@@ -4,6 +4,7 @@ import urllib
 
 kobisKey = '23534542e0be066999d2803d1057fc37'
 kmdbKey = 'N1UG972286869QC55WOA'
+theater_key = '7d0f32ab2f3d4c949ce02fb87a89332a'
 
 
 def DailyRanking(period):
@@ -207,3 +208,19 @@ def GetDetailInfo(code):
                         watchGradeNm
 
     return DetailInfoStr
+
+
+def GetLocation(name):
+    Location_utf8 = urllib.parse.quote(name)
+    url = 'https://openapi.gg.go.kr/MovieTheater'
+    url += '?key='+ theater_key + '&SIGUN_NM=' + Location_utf8
+    res = requests.get(url).text
+    tree = ElementTree.fromstring(res)
+    items = tree.iter('row')
+    l = []
+    for item in items:
+        BIZPLC_NM = item.find('BIZPLC_NM').text
+        REFINE_WGS84_LAT = item.find('REFINE_WGS84_LAT').text
+        REFINE_WGS84_LOGT = item.find('REFINE_WGS84_LOGT').text
+        l.append(((BIZPLC_NM,REFINE_WGS84_LAT,REFINE_WGS84_LOGT)))
+    return l
