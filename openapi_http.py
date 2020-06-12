@@ -1,4 +1,4 @@
-# -*- coding:cp949 -*-
+# -*- coding:utf-8 -*-
 import os
 import sys
 import http.client
@@ -11,16 +11,16 @@ client_secret = "oqZ6c0ZjHpzuX62dK9TKNAVVLRV4hfVlNfqkgPvq"
 #conn = http.client.HTTPConnection("naveropenapi.apigw.ntruss.com/map-static")
 #headers = {"X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret}
 
-url = "https://naveropenapi.apigw.ntruss.com/map-static/v2/raster"
+
 
 def GetMap(x,y):
     center = x + "," + y
     level = "16"
-    width = "250"
-    height = "150"
+    width = "550"
+    url = "https://naveropenapi.apigw.ntruss.com/map-static/v2/raster"
+    height = "550"
     format = "png8"
     parmas = "?w="+ width +"&h="+ height +"&center="+center+"&level="+level+"&format="+format+"&dataversion=201.3"
-    global url
     url += parmas
     resp = None
 

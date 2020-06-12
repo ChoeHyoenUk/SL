@@ -396,11 +396,10 @@ class MovieApp:
     def viewMap(self):
         x = self.theaterList[self.theaterListbox.curselection()[0]][1]
         y = self.theaterList[self.theaterListbox.curselection()[0]][2]
-        print(type(x))
-        print(type(y))
+        print(x,y)
         urlData = GetMap(x,y)
         im = Image.open(BytesIO(urlData))
-        self.MapView = PhotoImage(im)
+        self.MapView = ImageTk.PhotoImage(im)
         self.canvas.delete('all')
         self.canvas.create_image(250,150,image= self.MapView)
 
