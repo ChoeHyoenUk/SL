@@ -9,6 +9,7 @@ import urllib.request
 from PIL import Image, ImageTk
 from io import BytesIO
 from EmailSendFunc import *
+from DateCheckModule import DateCheck
 
 temp = None
 
@@ -92,7 +93,7 @@ class MovieApp:
         # 영화관 검색 페이지
         self.theaterPage = Frame(window, width=900, height=650, bg='white')
         self.theaterComboBox = ttk.Combobox(self.theaterPage, width=10)
-        self.theaterComboBox['value'] = ['시', '군']
+        self.theaterComboBox['value'] = ['시/군']
         self.searchValue = None
         self.MapView = None
         self.theaterComboBox.current(0)
@@ -142,6 +143,10 @@ class MovieApp:
         self.detailInfo.clear()
         self.rankingPosterImageForEmail.clear()
         self.pageNum = 0
+        date = self.periodEntry.get()
+        if not DateCheck(date):
+            msgbox.showerror("유효하지 않은 날짜입니다.", "유요한 날짜를 입력해주세요\nex)2020년 1월 1일 -> 20200101")
+            return
         if s == '일간':
             tree = DailyRanking(self.periodEntry.get())
             items = tree.iter('dailyBoxOffice')
@@ -376,32 +381,34 @@ class MovieApp:
         temp.destroy()
 
     def TheaterSearch(self):
-        if self.searchValue == '시' or self.searchValue == '군':
+        if self.searchValue == '시/군':
             self.theaterListbox.place_forget()
             self.viewMapsButton.place_forget()
         self.canvas.delete('all')
-        self.infoText.delete(1.0, END) #초기화
+        self.infoText.delete(1.0, END)  # 초기화
 
         self.searchValue = self.theaterComboBox.get()
 
-        if self.searchValue == '시' or self.searchValue == '군':
+        if self.searchValue == '시/군':
             location = self.theaterEntry.get()
             self.theaterList = GetLocation(location)
-            self.theaterListbox.delete(0,END)
+            self.theaterListbox.delete(0, END)
             for theater in self.theaterList:
-                self.theaterListbox.insert(END,theater[0])
+                self.theaterListbox.insert(END, theater[0])
             self.theaterListbox.place(x=20, y=50)
             self.viewMapsButton.place(x=820, y=320)
 
     def viewMap(self):
         x = self.theaterList[self.theaterListbox.curselection()[0]][1]
         y = self.theaterList[self.theaterListbox.curselection()[0]][2]
-        print(x,y)
         urlData = GetMap(x,y)
         im = Image.open(BytesIO(urlData))
         self.MapView = ImageTk.PhotoImage(im)
         self.canvas.delete('all')
         self.canvas.create_image(250,150,image= self.MapView)
+        Local = '주소 : ' + self.theaterList[self.theaterListbox.curselection()[0]][4]  # 도로명 주소
+        self.infoText.delete(1.0, END)
+        self.infoText.insert(END, Local)
 
 
 MovieApp()

@@ -198,6 +198,7 @@ def GetDetailInfo(code):
         for w in auditTree:
             if not w.find('watchGradeNm').text is None:
                 watchGradeNm += w.find('watchGradeNm').text
+                break
 
         DetailInfoStr = movieNm + '\n' + \
                         runtime + '\n' + \
@@ -213,7 +214,7 @@ def GetDetailInfo(code):
 def GetLocation(name):
     Location_utf8 = urllib.parse.quote(name)
     url = 'https://openapi.gg.go.kr/MovieTheater'
-    url += '?key='+ theater_key + '&SIGUN_NM=' + Location_utf8
+    url += '?key=' + theater_key + '&SIGUN_NM=' + Location_utf8
     res = requests.get(url).text
     tree = ElementTree.fromstring(res)
     items = tree.iter('row')
@@ -221,35 +222,26 @@ def GetLocation(name):
     cnt = 0
     for item in items:
         BIZPLC_NM = item.find('BIZPLC_NM').text
-        REFINE_WGS84_LOGT = item.find('REFINE_WGS84_LOGT').text # 경도
-        REFINE_WGS84_LAT = item.find('REFINE_WGS84_LAT').text # 위도
-        BSN_STATE_NM = item.find('BSN_STATE_NM').text
-        REFINE_ZIP_CD = item.find('REFINE_ZIP_CD').text
+        REFINE_WGS84_LOGT = item.find('REFINE_WGS84_LOGT').text  # 경도
+        REFINE_WGS84_LAT = item.find('REFINE_WGS84_LAT').text  # 위도
+        BSN_STATE_NM = item.find('BSN_STATE_NM').text  # 영업상태
+        REFINE_ZIP_CD = item.find('REFINE_ZIP_CD').text  # 우편번호
+        REFINE_LOTNO_ADDR = item.find('REFINE_LOTNO_ADDR').text  # 도로명주소
         cnt1 = 0
         for i in BIZPLC_NM:
             if i == "제":
-                BIZPLC_NM = BIZPLC_NM.replace("제","")
+                BIZPLC_NM = BIZPLC_NM.replace("제", "")
             elif i == "관":
                 BIZPLC_NM = BIZPLC_NM.replace("관", "")
         # 숫자 제거
         new_BIZPLC_NM = ''.join([i for i in BIZPLC_NM if not i.isdigit()])
-        if(BSN_STATE_NM == "영업중"):
+        if (BSN_STATE_NM == "영업중"):
             if cnt == 0:
-                l.append(((new_BIZPLC_NM, REFINE_WGS84_LOGT, REFINE_WGS84_LAT, REFINE_ZIP_CD)))
-                cnt+=1
+                l.append(((new_BIZPLC_NM, REFINE_WGS84_LOGT, REFINE_WGS84_LAT, REFINE_ZIP_CD, REFINE_LOTNO_ADDR)))
+                cnt += 1
             for i in l:
                 if i[3] != REFINE_ZIP_CD:
-                    cnt1+=1
+                    cnt1 += 1
             if (cnt1 == len(l)):
-                l.append(((new_BIZPLC_NM, REFINE_WGS84_LOGT, REFINE_WGS84_LAT, REFINE_ZIP_CD)))
-#    l = list(set(l))
-
-#    for i in l:
-#        for j in l:
-#            if(i[1] == j[1]):
-#                l.remove(i)
-#                break
-
-
-
+                l.append(((new_BIZPLC_NM, REFINE_WGS84_LOGT, REFINE_WGS84_LAT, REFINE_ZIP_CD, REFINE_LOTNO_ADDR)))
     return l
