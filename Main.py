@@ -104,6 +104,7 @@ class MovieApp:
         self.theaterComboBox['value'] = ['시/군']
         self.searchValue = None
         self.MapView = None
+        self.mapImageForEmail = None
         self.theaterComboBox.current(0)
         self.theaterComboBox.place(x=0, y=0)
         self.theaterEntry = Entry(self.theaterPage, width=70, relief='solid', bd=2)
@@ -435,6 +436,17 @@ class MovieApp:
         b.grid(row=1, column=1)
 
     def CreateEmailWindow_MovieInfo(self):
+        global temp
+        temp = Tk()
+        temp.title("Email")
+        temp.geometry('240x50')
+        e = Entry(temp, width=25)
+        e.insert(END, "받는 사람의 메일 주소")
+        e.grid(row=0, column=0)
+        b = Button(temp, text='보내기', command=self.SendEmail_MovieInfo)
+        b.grid(row=1, column=1)
+
+    def CreateEmailWindow_Map(self):
         global temp
         temp = Tk()
         temp.title("Email")
