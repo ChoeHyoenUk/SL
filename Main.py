@@ -11,8 +11,12 @@ from io import BytesIO
 from EmailSendFunc import *
 from DateCheckModule import DateCheck
 import telepot
+from datetime import datetime
 
 temp = None
+
+YMD = datetime.today().strftime("%Y%m%d")
+DAYOFWEEK = datetime.today().weekday()
 
 
 class MovieApp:
@@ -204,13 +208,30 @@ class MovieApp:
         self.rankingPosterImageForEmail.clear()
         self.pageNum = 0
         date = self.periodEntry.get()
-        if not DateCheck(date):
-            msgbox.showerror("유효하지 않은 날짜입니다.", "유요한 날짜를 입력해주세요\nex)2020년 1월 1일 -> 20200101")
-            return
+        date_i = int(date)
+        YMD_i = int(YMD)
         if s == '일간':
+            if date == YMD:
+                msgbox.showerror("유효하지 않은 날짜입니다.", "당일 박스오피스 순위는 조회할 수 없습니다.")
+                return
+            elif YMD_i < date_i:
+                msgbox.showerror("유효하지 않은 날짜입니다.", "미래의 박스오피스 순위는 알 수 없습니다.")
+                return
+            elif not DateCheck(date):
+                msgbox.showerror("유효하지 않은 날짜입니다.", "유요한 날짜를 입력해주세요\nex)2020년 1월 1일 -> 20200101")
+                return
             tree = DailyRanking(self.periodEntry.get())
             items = tree.iter('dailyBoxOffice')
         else:
+            if YMD_i + (6-DAYOFWEEK) < date_i:
+                msgbox.showerror("유효하지 않은 날짜입니다.", "미래의 박스오피스 순위는 알 수 없습니다.")
+                return
+            elif YMD_i - DAYOFWEEK <= date_i <= YMD_i + (6 - DAYOFWEEK):
+                msgbox.showerror("유효하지 않은 날짜입니다.", "금주 박스오피스 순위는 조회할 수 없습니다.")
+                return
+            elif not DateCheck(date):
+                msgbox.showerror("유효하지 않은 날짜입니다.", "유요한 날짜를 입력해주세요\nex)2020년 1월 1일 -> 20200101")
+                return
             tree = WeaklyRanking(self.periodEntry.get())
             items = tree.iter('weeklyBoxOffice')
 
