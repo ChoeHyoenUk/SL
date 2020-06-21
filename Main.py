@@ -134,14 +134,27 @@ class MovieApp:
         args = text.split(' ')
 
         if text.startswith('일간') and len(args) > 1:
-            if not DateCheck(args[1]):
-                self.bot.sendMessage(chat_id, "유효한 날짜를 입력해주세요.\nex)2020년 1월 1일 -> 20200101")
+            if args[1] == YMD:
+                self.bot.sendMessage(chat_id, "당일 박스오피스 순위는 조회할 수 없습니다.")
+                return
+            elif int(YMD) < int(args[1]):
+                self.bot.sendMessage(chat_id, "미래 박스오피스 순위는 조회할 수 없습니다.")
+                return
+            elif not DateCheck(args[1]):
+                self.bot.sendMessage("유효하지 않은 날짜입니다. 유요한 날짜를 입력해주세요\nex)2020년 1월 1일 -> 20200101")
                 return
             msg = self.GetDailyRanking(args[1])
             self.bot.sendMessage(chat_id, msg)
         elif text.startswith('주간') and len(args) > 1:
-            if not DateCheck(args[1]):
-                self.bot.sendMessage(chat_id, "유효한 날짜를 입력해주세요.\nex)2020년 1월 1일 -> 20200101")
+            if int(YMD) + (6 - DAYOFWEEK) < int(args[1]):
+                self.bot.sendMessage(chat_id, "미래 박스오피스 순위는 조회할 수 없습니다.")
+                return
+            elif int(YMD) - DAYOFWEEK <= int(args[1]) <= int(YMD) + (6 - DAYOFWEEK):
+                self.bot.sendMessage(chat_id, "금주 박스오피스 순위는 조회할 수 없습니다.")
+                return
+            elif not DateCheck(args[1]):
+                self.bot.sendMessage("유효하지 않은 날짜입니다. 유요한 날짜를 입력해주세요\nex)2020년 1월 1일 -> 20200101")
+                return
             msg = self.GetDailyRanking(args[1])
             self.bot.sendMessage(chat_id, msg)
         elif text.startswith('정보') and len(args) > 1:
