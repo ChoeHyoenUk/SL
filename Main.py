@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 from io import BytesIO
 from EmailSendFunc import *
 from DateCheckModule import DateCheck
+import telepot
 
 temp = None
 
@@ -20,6 +21,9 @@ class MovieApp:
         window.title("MovieApp")
         window.geometry("1400x750")
         myFont = tkinter.font.Font(window, family='맑은 고딕', size=14)
+
+        # 텔레그램 봇
+        self.bot = telepot.Bot("1135581434:AAH6GHgLSZM5_SSgGl3jXltDyF9wTa2nXDg")
 
         # 각 버튼에 표시될 이미지를 로드
         self.rankingImg = PhotoImage(file='Images/ranking.png')
@@ -111,7 +115,63 @@ class MovieApp:
         # 처음 시작시 랭킹 페이지가 나오도록 설정함
         self.rankingPage.tkraise()
 
+        self.bot.message_loop(self.CheckMsg)
+
         window.mainloop()
+
+    def CheckMsg(self, msg):
+        content_type, chat_type, chat_id = telepot.glance(msg)
+        if content_type != 'text':
+            print("텍스트만 입력하세요.")
+            return
+
+        text = msg['text']
+        args = text.split(' ')
+
+        if text.startswith('일간') and len(args) > 1:
+            if not DateCheck(args[1]):
+                self.bot.sendMessage(chat_id, "유효한 날짜를 입력해주세요.\nex)2020년 1월 1일 -> 20200101")
+                return
+            msg = self.GetDailyRanking(args[1])
+            self.bot.sendMessage(chat_id, msg)
+        elif text.startswith('주간') and len(args) > 1:
+            if not DateCheck(args[1]):
+                self.bot.sendMessage(chat_id, "유효한 날짜를 입력해주세요.\nex)2020년 1월 1일 -> 20200101")
+            msg = self.GetDailyRanking(args[1])
+            self.bot.sendMessage(chat_id, msg)
+        elif text.startswith('정보') and len(args) > 1:
+            msg = GetDetailInfo(args[1])
+            self.bot.sendMessage(chat_id, msg)
+        else:
+            self.bot.sendMessage(chat_id,
+                            '알 수 없는 명령어입니다.\n일간 YYYYMMDD, 주간 YYYYMMDD, 정보 [영화코드] 명령어 중 하나를 입력해주세요\n영화코드는 일간/주간을 검색하면 알 수 있습니다.')
+
+    def GetDailyRanking(self, date):
+        tree = DailyRanking(date)
+        items = tree.iter('dailyBoxOffice')
+        msg = ''
+        for item in items:
+            name = item.find('movieNm').text
+            ranking = item.find('rank').text
+            movieCd = item.find('movieCd').text
+            msg += ranking + '. ' + name + ' [영화코드: ' + movieCd + ']\n'
+        msg += '해당 영화코드를 사용해 해당 영화의 상세정보를 조회할 수 있습니다.'
+        return msg
+
+    def GetWeeklyRanking(self, date):
+        tree = DailyRanking(date)
+        items = tree.iter('weeklyBoxOffice')
+        msg = ''
+        for item in items:
+            name = item.find('movieNm').text
+            ranking = item.find('rank').text
+            movieCd = item.find('movieCd').text
+            msg += ranking + '. ' + name + ' [영화코드: ' + movieCd + ']\n'
+        msg += '해당 영화코드를 사용해 해당 영화의 상세정보를 조회할 수 있습니다.'
+        return msg
+
+    def GetDetailInfo(self, code):
+        return GetDetailInfo(code)
 
     def RankingRaise(self):
         self.rankingPage.tkraise()
@@ -259,7 +319,7 @@ class MovieApp:
         self.canvas.delete('all')
         self.canvas.create_image(250, 150, image=self.rankingPosterImage[idx + (3 * self.pageNum)][1])
         self.infoText.delete(1.0, END)
-        self.infoText.insert(END, self.detailInfo[idx+(3*self.pageNum)])
+        self.infoText.insert(END, self.detailInfo[idx + (3 * self.pageNum)])
         self.imageIndex = idx + (3 * self.pageNum)
         self.sendEmail_BoxOffice.place(x=550, y=0)
 
@@ -401,11 +461,11 @@ class MovieApp:
     def viewMap(self):
         x = self.theaterList[self.theaterListbox.curselection()[0]][1]
         y = self.theaterList[self.theaterListbox.curselection()[0]][2]
-        urlData = GetMap(x,y)
+        urlData = GetMap(x, y)
         im = Image.open(BytesIO(urlData))
         self.MapView = ImageTk.PhotoImage(im)
         self.canvas.delete('all')
-        self.canvas.create_image(250,150,image= self.MapView)
+        self.canvas.create_image(250, 150, image=self.MapView)
         Local = '주소 : ' + self.theaterList[self.theaterListbox.curselection()[0]][4]  # 도로명 주소
         self.infoText.delete(1.0, END)
         self.infoText.insert(END, Local)
