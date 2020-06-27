@@ -13,8 +13,6 @@ from DateCheckModule import DateCheck
 import telepot
 from datetime import datetime
 
-temp = None
-
 YMD = datetime.today().strftime("%Y%m%d")
 DAYOFWEEK = datetime.today().weekday()
 
@@ -28,6 +26,10 @@ class MovieApp:
 
         # 텔레그램 봇
         self.bot = telepot.Bot("1135581434:AAH6GHgLSZM5_SSgGl3jXltDyF9wTa2nXDg")
+
+        #Email Window
+        self.MailWindow = None
+        self.receiveAddress = None
 
         # 각 버튼에 표시될 이미지를 로드
         self.rankingImg = PhotoImage(file='Images/ranking.png')
@@ -438,53 +440,40 @@ class MovieApp:
         self.sendEmail_MovieInfo.place(x=550, y=0)
 
     def CreateEmailWindow_BoxOffice(self):
-        global temp
-        temp = Tk()
-        temp.title("Email")
-        temp.geometry('240x50')
-        e = Entry(temp, width=25)
-        e.insert(END, "받는 사람의 메일 주소")
-        e.grid(row=0, column=0)
-        b = Button(temp, text='보내기', command=self.SendEmail_BoxOffice)
+        self.MailWindow = Tk()
+        self.MailWindow.title("Email")
+        self.MailWindow.geometry('240x50')
+        self.receiveAddress = Entry(self.MailWindow, width=25)
+        self.receiveAddress.insert(END, '받는 사람의 메일 주소')
+        self.receiveAddress.grid(row=0, column=0)
+        b = Button(self.MailWindow, text='보내기', command=self.SendEmail_BoxOffice)
         b.grid(row=1, column=1)
 
     def CreateEmailWindow_MovieInfo(self):
-        global temp
-        temp = Tk()
-        temp.title("Email")
-        temp.geometry('240x50')
-        e = Entry(temp, width=25)
-        e.insert(END, "받는 사람의 메일 주소")
-        e.grid(row=0, column=0)
-        b = Button(temp, text='보내기', command=self.SendEmail_MovieInfo)
-        b.grid(row=1, column=1)
-
-    def CreateEmailWindow_Map(self):
-        global temp
-        temp = Tk()
-        temp.title("Email")
-        temp.geometry('240x50')
-        e = Entry(temp, width=25)
-        e.insert(END, "받는 사람의 메일 주소")
-        e.grid(row=0, column=0)
-        b = Button(temp, text='보내기', command=self.SendEmail_MovieInfo)
+        self.MailWindow = Tk()
+        self.MailWindow.title("Email")
+        self.MailWindow.geometry('240x50')
+        self.receiveAddress = Entry(self.MailWindow, width=25)
+        self.receiveAddress.insert(END, '받는 사람의 메일 주소')
+        self.receiveAddress.grid(row=0, column=0)
+        b = Button(self.MailWindow, text='보내기', command=self.SendEmail_MovieInfo)
         b.grid(row=1, column=1)
 
     def SendEmail_MovieInfo(self):
-        global temp
         image = self.moviePosterForEmail
         text = self.infoText.get(1.0, END)
-        SendMail(image, text, 'MovieApp에서 보낸 영화 상세 정보입니다.')
+        receiveAddress = self.receiveAddress.get()
+        SendMail(image, text, receiveAddress, 'MovieApp에서 보낸 영화 상세 정보입니다.')
         msgbox.showinfo("Email send complete", "메일을 성공적으로 전송했습니다.")
-        temp.destroy()
+        self.MailWindow.destroy()
 
     def SendEmail_BoxOffice(self):
-        global temp
         image = self.rankingPosterImageForEmail[self.imageIndex]
         text = self.infoText.get(1.0, END)
-        SendMail(image, text, 'MovieApp에서 보낸 박스오피스 정보입니다.')
+        receiveAddress = self.receiveAddress.get()
+        SendMail(image, text, receiveAddress, 'MovieApp에서 보낸 박스오피스 정보입니다.')
         msgbox.showinfo("Email send complete", "메일을 성공적으로 전송했습니다.")
-        temp.destroy()
+        self.MailWindow.destroy()
 
     def TheaterSearch(self):
         if self.searchValue == '시/군':

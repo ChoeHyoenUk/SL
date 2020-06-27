@@ -2,12 +2,11 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 from email.mime.base import MIMEBase
-from email import encoders
 
 
-def SendMail(image, text, title):
+def SendMail(image, text, receiveAddress, title):
     me = 'mrbear6500@gmail.com'
-    you = 'levy----@naver.com'
+    you = receiveAddress
     contents = text
 
     msg = MIMEBase('multipart', 'mixed')
